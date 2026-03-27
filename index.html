@@ -656,8 +656,6 @@ function goToPayment(){
     '<div style="font-size:15px;color:var(--text-muted);margin-bottom:8px;">Transport: ฿500 × '+n+' = <b>฿'+transFee.toLocaleString()+'</b></div>'+
     '<div style="font-size:26px;font-weight:800;color:var(--gold);">Total: ฿'+totalFee.toLocaleString()+'</div>';
   generatePromptPayQR(n * 2000);
-  // Generate live PromptPay QR with exact amount
-  generatePromptPayQR(participants.length * 1500);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 function goBackToStep2(){document.getElementById('screenPayment').style.display='none';document.getElementById('screenStep2').style.display='block';setStep(2);}
