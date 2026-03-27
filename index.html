@@ -201,7 +201,7 @@ textarea{resize:vertical;min-height:80px;}
 .btn-primary,.btn-secondary,.btn-green,.upload-opt-btn,.add-participant-btn{touch-action:manipulation;}
 input,select,textarea{font-size:16px!important;}
 </style>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
 
@@ -337,7 +337,7 @@ input,select,textarea{font-size:16px!important;}
     <div class="qr-section">
       <div class="qr-title">💳 Payment QR Code · QR โอนเงิน</div>
       <div class="qr-sub">PromptPay / Bank Transfer · โอนเงินผ่าน PromptPay · भुक्तानी</div>
-      <canvas id="liveQrCanvas" width="220" height="220" style="width:220px;height:220px;border-radius:12px;border:2px solid #eee;display:block;margin:0 auto 1rem;"></canvas>
+      <div id="liveQrContainer" style="width:220px;height:220px;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;"></div>
       <div class="qr-amount" id="totalAmount">฿ —</div>
       <div class="qr-note">
         🏦 Thai Nepali Association<br>
@@ -903,26 +903,53 @@ function buildPromptPayPayload(amount) {
 }
 
 function generatePromptPayQR(amount) {
-  var canvas = document.getElementById('liveQrCanvas');
-  if (!canvas) return;
+  var container = document.getElementById('liveQrContainer');
+  if (!container) return;
   var payload = buildPromptPayPayload(amount);
+  var attempts = 0;
   var tryRender = function() {
-    if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
-      // Clear canvas first
-      var ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      QRCode.toCanvas(canvas, payload, {
-        width: 220, margin: 2,
-        color: { dark: '#000000', light: '#ffffff' }
-      }, function(err){ if(err) console.error('QR error:', err); });
-    } else {
+    if (typeof QRCode !== 'undefined') {
+      // Clear previous QR
+      container.innerHTML = '';
+      try {
+        new QRCode(container, {
+          text: payload,
+          width: 220,
+          height: 220,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch(err) {
+        console.error('QR error:', err);
+        showFallbackQR(container, payload);
+      }
+    } else if (attempts < 15) {
+      attempts++;
       setTimeout(tryRender, 300);
+    } else {
+      showFallbackQR(container, payload);
     }
   };
   tryRender();
 }
 
+function showFallbackQR(container, payload) {
+  container.innerHTML = '';
+  var img = document.createElement('img');
+  img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' + encodeURIComponent(payload);
+  img.style.cssText = 'width:220px;height:220px;border-radius:12px;border:2px solid #eee;display:block;';
+  img.alt = 'PromptPay QR';
+  container.appendChild(img);
+}
+
 document.getElementById('participantModal').addEventListener('click',function(e){if(e.target===this)closeParticipantModal();});
+
+// Prevent accidental reload/back/close
+window.addEventListener('beforeunload', function(e) {
+  e.preventDefault();
+  e.returnValue = '';
+});
 </script>
 </body>
 </html>
