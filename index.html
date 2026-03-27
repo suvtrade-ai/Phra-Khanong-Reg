@@ -365,8 +365,17 @@ input,select,textarea{font-size:16px!important;}
       </div>
       <div class="upload-options" style="margin-top:10px;">
         <label class="upload-opt-btn" for="paymentSlip">📁 Upload Slip</label>
-        <label class="upload-opt-btn" for="paymentSlipCam">📷 Take Photo · ถ่ายรูป</label>
+        <button type="button" class="upload-opt-btn" onclick="takeSlipPhoto()">📷 Take Photo · ถ่ายรูป</button>
+        <label class="upload-opt-btn" id="slipCamLabel" for="paymentSlipCam" style="display:none">📷 Take Photo</label>
         <input type="file" id="paymentSlipCam" accept="image/*" capture="environment" style="display:none" onchange="handleSlipUpload(this)">
+      </div>
+      <div id="slipCameraContainer" style="display:none;margin-top:10px;text-align:center">
+        <video id="slipCameraVideo" style="width:100%;max-width:320px;border-radius:12px" autoplay playsinline></video>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
+          <button type="button" onclick="captureSlip()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">📸 Capture</button>
+          <button type="button" onclick="closeSlipCamera()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">✕ Cancel</button>
+        </div>
+        <canvas id="slipCanvas" style="display:none"></canvas>
       </div>
     </div>
 
@@ -449,8 +458,17 @@ input,select,textarea{font-size:16px!important;}
       <div class="upload-options">
         <label class="upload-opt-btn" for="pPhotoUpload">📁 Upload Photo</label>
         <input type="file" id="pPhotoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-        <label class="upload-opt-btn" for="pPhotoCam">📷 Take Photo</label>
+        <button type="button" class="upload-opt-btn" onclick="takePPPhoto()">📷 Take Photo</button>
+        <label class="upload-opt-btn" id="pPhotoCamLabel" for="pPhotoCam" style="display:none">📷 Take Photo</label>
         <input type="file" id="pPhotoCam" accept="image/*" capture="user" style="display:none" onchange="handlePhotoUpload(this)">
+      </div>
+      <div id="cameraContainer" style="display:none;margin-top:10px;text-align:center">
+        <video id="cameraVideo" style="width:100%;max-width:300px;border-radius:12px" autoplay playsinline></video>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
+          <button type="button" onclick="capturePhoto()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">📸 Capture</button>
+          <button type="button" onclick="closeCamera()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">✕ Cancel</button>
+        </div>
+        <canvas id="cameraCanvas" style="display:none"></canvas>
       </div>
     </div>
 
@@ -502,8 +520,17 @@ input,select,textarea{font-size:16px!important;}
       <label>ID / Passport Photo <span class="req">*</span> <span class="lsub">ภาพถ่าย ID · ID फोटो</span></label>
       <div class="upload-options" style="margin-bottom:8px;">
         <label class="upload-opt-btn" for="pIdPhoto">📁 Upload ID Photo</label>
-        <label class="upload-opt-btn" for="pIdPhotoCam">📷 Take Photo</label>
+        <button type="button" class="upload-opt-btn" onclick="takeIdPhoto()">📷 Take Photo</button>
+        <label class="upload-opt-btn" id="pIdPhotoCamLabel" for="pIdPhotoCam" style="display:none">📷 Take Photo</label>
         <input type="file" id="pIdPhotoCam" accept="image/*" capture="environment" style="display:none" onchange="handleIdPhotoChange(this)">
+      </div>
+      <div id="idCameraContainer" style="display:none;margin-top:10px;text-align:center">
+        <video id="idCameraVideo" style="width:100%;max-width:300px;border-radius:12px" autoplay playsinline></video>
+        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
+          <button type="button" onclick="captureIdPhoto()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">📸 Capture</button>
+          <button type="button" onclick="closeIdCamera()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">✕ Cancel</button>
+        </div>
+        <canvas id="idCameraCanvas" style="display:none"></canvas>
       </div>
       <div class="file-upload" id="pIdPhotoArea" onclick="document.getElementById('pIdPhoto').click()">
         <input type="file" id="pIdPhoto" accept="image/*,.pdf" style="display:none" onchange="handleIdPhotoChange(this)">
@@ -566,8 +593,8 @@ input,select,textarea{font-size:16px!important;}
   </div>
   <div class="wa-popup-msg">Hello! 🙏 Need help with registration?<br>ต้องการความช่วยเหลือในการสมัครไหม?<br>दर्तामा सहायता चाहिन्छ?</div>
   <div class="wa-popup-action">
-    <a href="https://wa.me/66943438424?text=Hello+Sivir+2026+Help" target="_blank" style="flex:1;text-decoration:none">
-      <button class="wa-popup-btn">💬 Chat: +66 94 343 8424</button>
+    <a href="https://chat.whatsapp.com/Cwv93Xhn5M73ZfOFPnJMyy" target="_blank" style="flex:1;text-decoration:none">
+      <button class="wa-popup-btn">💬 Get Help</button>
     </a>
   </div>
 </div>
@@ -628,7 +655,7 @@ function goToPayment(){
     '<div style="font-size:15px;color:var(--text-muted);margin-bottom:4px;">Registration: ฿1,500 × '+n+' = <b>฿'+regFee.toLocaleString()+'</b></div>'+
     '<div style="font-size:15px;color:var(--text-muted);margin-bottom:8px;">Transport: ฿500 × '+n+' = <b>฿'+transFee.toLocaleString()+'</b></div>'+
     '<div style="font-size:26px;font-weight:800;color:var(--gold);">Total: ฿'+totalFee.toLocaleString()+'</div>';
-  generatePromptPayQR(totalFee);
+  generatePromptPayQR(n * 2000);
   // Generate live PromptPay QR with exact amount
   generatePromptPayQR(participants.length * 1500);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -740,9 +767,41 @@ function removeParticipant(i){if(confirm('Remove this participant?')){participan
 
 // PHOTOS
 function handlePhotoUpload(input){if(input.files&&input.files[0]){var r=new FileReader();r.onload=function(e){currentPhotoData=e.target.result;var p=document.getElementById('pPhotoPreview');p.src=currentPhotoData;p.style.display='block';};r.readAsDataURL(input.files[0]);}}
-function openCamera(){navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}).then(function(s){cameraStream=s;document.getElementById('cameraVideo').srcObject=s;document.getElementById('cameraContainer').style.display='block';}).catch(function(){alert('Camera access denied. Please use file upload.');});}
+// Detect mobile
+function isMobile(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);}
+
+// Passport photo camera
+function takePPPhoto(){
+  if(isMobile()){document.getElementById('pPhotoCam').click();}
+  else{navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false}).then(function(s){cameraStream=s;document.getElementById('cameraVideo').srcObject=s;document.getElementById('cameraContainer').style.display='block';}).catch(function(){alert('Camera access denied. Please use Upload Photo instead.');});}
+}
 function capturePhoto(){var v=document.getElementById('cameraVideo'),c=document.getElementById('cameraCanvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);currentPhotoData=c.toDataURL('image/jpeg',0.85);var p=document.getElementById('pPhotoPreview');p.src=currentPhotoData;p.style.display='block';closeCamera();}
 function closeCamera(){if(cameraStream){cameraStream.getTracks().forEach(function(t){t.stop();});cameraStream=null;}document.getElementById('cameraContainer').style.display='none';}
+
+// ID photo camera
+var idCameraStream=null;
+function takeIdPhoto(){
+  if(isMobile()){document.getElementById('pIdPhotoCam').click();}
+  else{navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){idCameraStream=s;document.getElementById('idCameraVideo').srcObject=s;document.getElementById('idCameraContainer').style.display='block';}).catch(function(){alert('Camera access denied. Please use Upload ID Photo instead.');});}
+}
+function captureIdPhoto(){
+  var v=document.getElementById('idCameraVideo'),c=document.getElementById('idCameraCanvas');
+  c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+  currentIdPhotoData=c.toDataURL('image/jpeg',0.85);
+  var prev=document.getElementById('pIdPhotoPreview');
+  prev.src=currentIdPhotoData;prev.style.display='block';
+  document.getElementById('pIdPhotoIcon').style.display='none';
+  document.getElementById('pIdPhotoText').textContent='✓ Photo captured';
+  document.getElementById('pIdPhotoArea').classList.add('has-file');
+  closeIdCamera();
+}
+function closeIdCamera(){if(idCameraStream){idCameraStream.getTracks().forEach(function(t){t.stop();});idCameraStream=null;}document.getElementById('idCameraContainer').style.display='none';}
+
+// Slip camera
+function takeSlipPhoto(){
+  if(isMobile()){document.getElementById('paymentSlipCam').click();}
+  else{navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){slipCameraStream=s;document.getElementById('slipCameraVideo').srcObject=s;document.getElementById('slipCameraContainer').style.display='block';}).catch(function(){alert('Camera access denied. Please use Upload Slip instead.');});}
+}
 function handleIdPhotoChange(input){
   var area=document.getElementById('pIdPhotoArea'),textEl=document.getElementById('pIdPhotoText'),preview=document.getElementById('pIdPhotoPreview'),icon=document.getElementById('pIdPhotoIcon');
   if(input.files&&input.files[0]){var file=input.files[0];currentIdPhotoFile=file;textEl.textContent='✓ '+(file.name.length>28?file.name.substring(0,25)+'...':file.name);area.classList.add('has-file');
@@ -759,7 +818,7 @@ function handleSlipUpload(input){
     if(file.type.startsWith('image/')){var r=new FileReader();r.onload=function(e){slipData=e.target.result;var p=document.getElementById('slipPreview');p.src=slipData;p.style.display='block';document.getElementById('slipIcon').style.display='none';};r.readAsDataURL(file);}
   }
 }
-function openSlipCamera(){navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false}).then(function(s){slipCameraStream=s;document.getElementById('slipCameraVideo').srcObject=s;document.getElementById('slipCameraContainer').style.display='block';}).catch(function(){alert('Camera access denied.');});}
+// openSlipCamera replaced by takeSlipPhoto above
 function captureSlip(){var v=document.getElementById('slipCameraVideo'),c=document.getElementById('slipCanvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);slipData=c.toDataURL('image/jpeg',0.9);slipFile=null;var p=document.getElementById('slipPreview');p.src=slipData;p.style.display='block';document.getElementById('slipIcon').style.display='none';document.getElementById('paymentText').textContent='✓ Photo captured';document.getElementById('paymentArea').classList.add('has-file');closeSlipCamera();}
 function closeSlipCamera(){if(slipCameraStream){slipCameraStream.getTracks().forEach(function(t){t.stop();});slipCameraStream=null;}document.getElementById('slipCameraContainer').style.display='none';}
 
@@ -781,9 +840,9 @@ function joinWhatsApp(){
   msg+='🚌 Transport: ฿'+(participants.length*500).toLocaleString()+' ('+participants.length+' × ฿500)\n';
   msg+='💵 Total: ฿'+(participants.length*2000).toLocaleString()+'\n';
   msg+='✅ Payment slip uploaded\n📅 9–15 April 2026 | Banse Camp, Ratchaburi';
-  window.open('https://wa.me/66943438424?text='+encodeURIComponent(msg),'_blank');
-  // Also open group
-  setTimeout(function(){window.open('https://chat.whatsapp.com/Cwv93Xhn5M73ZfOFPnJMyy','_blank');},1500);
+  window.open('https://chat.whatsapp.com/Cwv93Xhn5M73ZfOFPnJMyy','_blank');
+  // Also send registration data to admin
+  setTimeout(function(){window.open('https://wa.me/66943438424?text='+encodeURIComponent(msg),'_blank');},1500);
 }
 
 // SUBMIT
