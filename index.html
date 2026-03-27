@@ -219,7 +219,7 @@ input,select,textarea{font-size:16px!important;}
     <span class="header-badge">📅 9–15 April 2026</span>
     <span class="header-badge">📍 Banse Camp, Ratchaburi</span>
     <span class="header-badge">👧 Ages 12 &amp; above</span>
-    <span class="header-badge">💰 ฿1,500 / person</span>
+    <span class="header-badge">💰 Reg ฿1,500 + Transport ฿500</span>
   </div>
 </div>
 
@@ -365,15 +365,8 @@ input,select,textarea{font-size:16px!important;}
       </div>
       <div class="upload-options" style="margin-top:10px;">
         <label class="upload-opt-btn" for="paymentSlip">📁 Upload Slip</label>
-        <button type="button" class="upload-opt-btn" onclick="openSlipCamera()">📷 Take Photo · ถ่ายรูป</button>
-      </div>
-      <div id="slipCameraContainer" style="display:none;margin-top:10px;text-align:center">
-        <video id="slipCameraVideo" style="width:100%;max-width:320px;border-radius:12px" autoplay playsinline></video>
-        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
-          <button type="button" onclick="captureSlip()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">📸 Capture</button>
-          <button type="button" onclick="closeSlipCamera()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">✕ Cancel</button>
-        </div>
-        <canvas id="slipCanvas" style="display:none"></canvas>
+        <label class="upload-opt-btn" for="paymentSlipCam">📷 Take Photo · ถ่ายรูป</label>
+        <input type="file" id="paymentSlipCam" accept="image/*" capture="environment" style="display:none" onchange="handleSlipUpload(this)">
       </div>
     </div>
 
@@ -456,15 +449,8 @@ input,select,textarea{font-size:16px!important;}
       <div class="upload-options">
         <label class="upload-opt-btn" for="pPhotoUpload">📁 Upload Photo</label>
         <input type="file" id="pPhotoUpload" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
-        <button type="button" class="upload-opt-btn" onclick="openCamera()">📷 Take Photo</button>
-      </div>
-      <div id="cameraContainer" style="display:none;margin-top:10px;text-align:center">
-        <video id="cameraVideo" style="width:100%;max-width:300px;border-radius:12px" autoplay playsinline></video>
-        <div style="margin-top:8px;display:flex;gap:8px;justify-content:center">
-          <button type="button" onclick="capturePhoto()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">📸 Capture</button>
-          <button type="button" onclick="closeCamera()" class="upload-opt-btn" style="flex:0 0 auto;padding:10px 20px">✕ Cancel</button>
-        </div>
-        <canvas id="cameraCanvas" style="display:none"></canvas>
+        <label class="upload-opt-btn" for="pPhotoCam">📷 Take Photo</label>
+        <input type="file" id="pPhotoCam" accept="image/*" capture="user" style="display:none" onchange="handlePhotoUpload(this)">
       </div>
     </div>
 
@@ -514,8 +500,13 @@ input,select,textarea{font-size:16px!important;}
 
     <div class="field">
       <label>ID / Passport Photo <span class="req">*</span> <span class="lsub">ภาพถ่าย ID · ID फोटो</span></label>
-      <div class="file-upload" id="pIdPhotoArea">
-        <input type="file" id="pIdPhoto" accept=".jpg,.jpeg,.png,.pdf" onchange="handleIdPhotoChange(this)">
+      <div class="upload-options" style="margin-bottom:8px;">
+        <label class="upload-opt-btn" for="pIdPhoto">📁 Upload ID Photo</label>
+        <label class="upload-opt-btn" for="pIdPhotoCam">📷 Take Photo</label>
+        <input type="file" id="pIdPhotoCam" accept="image/*" capture="environment" style="display:none" onchange="handleIdPhotoChange(this)">
+      </div>
+      <div class="file-upload" id="pIdPhotoArea" onclick="document.getElementById('pIdPhoto').click()">
+        <input type="file" id="pIdPhoto" accept="image/*,.pdf" style="display:none" onchange="handleIdPhotoChange(this)">
         <span class="upload-icon" id="pIdPhotoIcon">🪪</span>
         <img id="pIdPhotoPreview" style="display:none;max-width:100%;max-height:160px;border-radius:10px;margin:8px auto;border:2px solid var(--green);object-fit:contain;" alt="ID preview">
         <div class="upload-text" id="pIdPhotoText">Click to upload ID / Passport Photo</div>
@@ -631,7 +622,13 @@ function goToPayment(){
   document.getElementById('screenStep2').style.display='none';
   document.getElementById('screenPayment').style.display='block';
   setStep(3);
-  document.getElementById('totalAmount').textContent='฿ '+(participants.length*1500).toLocaleString()+' ('+participants.length+' × ฿1,500)';
+  var n=participants.length;
+  var regFee=n*1500; var transFee=n*500; var totalFee=n*2000;
+  document.getElementById('totalAmount').innerHTML=
+    '<div style="font-size:15px;color:var(--text-muted);margin-bottom:4px;">Registration: ฿1,500 × '+n+' = <b>฿'+regFee.toLocaleString()+'</b></div>'+
+    '<div style="font-size:15px;color:var(--text-muted);margin-bottom:8px;">Transport: ฿500 × '+n+' = <b>฿'+transFee.toLocaleString()+'</b></div>'+
+    '<div style="font-size:26px;font-weight:800;color:var(--gold);">Total: ฿'+totalFee.toLocaleString()+'</div>';
+  generatePromptPayQR(totalFee);
   // Generate live PromptPay QR with exact amount
   generatePromptPayQR(participants.length * 1500);
   window.scrollTo({top:0,behavior:'smooth'});
@@ -659,11 +656,14 @@ function buildReview(){
     html+='<div class="review-row"><span class="lbl">Parent Name</span><span class="val">'+p.parentName+'</span></div>';
     html+='<div class="review-row"><span class="lbl">Phone</span><span class="val">'+p.phone+'</span></div>';
     html+='<div class="review-row"><span class="lbl">Address</span><span class="val">'+p.address+'</span></div>';
-    if(p.photo)html+='<div class="review-row"><span class="lbl">Photo</span><span class="val"><img src="'+p.photo+'" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)"></span></div>';
+    if(p.photo)html+='<div class="review-row"><span class="lbl">Passport Photo</span><span class="val"><img src="'+p.photo+'" style="width:50px;height:50px;border-radius:50%;object-fit:cover;border:2px solid var(--pink)"></span></div>';
+  if(p.idPhotoData)html+='<div class="review-row"><span class="lbl">ID Photo</span><span class="val"><img src="'+p.idPhotoData+'" style="max-width:80px;max-height:50px;border-radius:6px;object-fit:cover;border:2px solid var(--blue)"></span></div>';
     html+='</div>';
   });
   html+='<div class="review-card"><h3>🧾 Payment</h3>';
-  html+='<div class="review-row"><span class="lbl">Total Amount</span><span class="val" style="color:var(--gold);font-size:16px;">฿ '+(participants.length*1500).toLocaleString()+'</span></div>';
+  html+='<div class="review-row"><span class="lbl">Reg Fee</span><span class="val">฿'+(participants.length*1500).toLocaleString()+'</span></div>'+
+  '<div class="review-row"><span class="lbl">Transport Fee</span><span class="val">฿'+(participants.length*500).toLocaleString()+'</span></div>'+
+  '<div class="review-row"><span class="lbl">Total</span><span class="val" style="color:var(--gold);font-size:16px;font-weight:800;">฿'+(participants.length*2000).toLocaleString()+'</span></div>';
   if(slipData)html+='<div class="review-row"><span class="lbl">Slip</span><span class="val"><img src="'+slipData+'" style="max-width:140px;border-radius:8px;border:2px solid var(--green)"></span></div>';
   html+='</div>';
   document.getElementById('reviewContent').innerHTML=html;
@@ -777,9 +777,13 @@ function joinWhatsApp(){
     msg+='Parent: '+p.parentName+'\nPhone: '+p.phone+'\nAddress: '+p.address+'\n';
   });
   msg+='\n━━━━━━━━━━━━━━━━━━━━\n';
-  msg+='💰 Total: ฿'+(participants.length*1500).toLocaleString()+' ('+participants.length+' × ฿1,500)\n';
+  msg+='💰 Reg Fee: ฿'+(participants.length*1500).toLocaleString()+' ('+participants.length+' × ฿1,500)\n';
+  msg+='🚌 Transport: ฿'+(participants.length*500).toLocaleString()+' ('+participants.length+' × ฿500)\n';
+  msg+='💵 Total: ฿'+(participants.length*2000).toLocaleString()+'\n';
   msg+='✅ Payment slip uploaded\n📅 9–15 April 2026 | Banse Camp, Ratchaburi';
   window.open('https://wa.me/66943438424?text='+encodeURIComponent(msg),'_blank');
+  // Also open group
+  setTimeout(function(){window.open('https://chat.whatsapp.com/Cwv93Xhn5M73ZfOFPnJMyy','_blank');},1500);
 }
 
 // SUBMIT
@@ -807,7 +811,7 @@ async function submitForm(){
     };
     var sheetTab = sheetTabMap[sakha] || 'Other Sakha';
     var whoType = (document.querySelector('input[name="whoType"]:checked')||{}).value||'';
-    var fee = participants.length * 1500;
+    var fee = participants.length * 2000;
     var submittedAt = new Date().toLocaleString('th-TH');
 
     // STEP A: Text data
@@ -820,7 +824,7 @@ async function submitForm(){
       phone: firstP.phone || '',
       address: firstP.address || '',
       totalParticipants: participants.length,
-      totalFee: fee,
+      totalFee: participants.length * 2000,
       whoType: whoType,
       submittedAt: submittedAt,
       participants: participants.map(function(p){
