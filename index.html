@@ -337,7 +337,7 @@ input,select,textarea{font-size:16px!important;}
     <div class="qr-section">
       <div class="qr-title">💳 Payment QR Code · QR โอนเงิน</div>
       <div class="qr-sub">PromptPay / Bank Transfer · โอนเงินผ่าน PromptPay · भुक्तानी</div>
-      <canvas id="liveQrCanvas" style="width:220px;height:220px;border-radius:12px;border:2px solid #eee;display:block;margin:0 auto 1rem;"></canvas>
+      <canvas id="liveQrCanvas" width="220" height="220" style="width:220px;height:220px;border-radius:12px;border:2px solid #eee;display:block;margin:0 auto 1rem;"></canvas>
       <div class="qr-amount" id="totalAmount">฿ —</div>
       <div class="qr-note">
         🏦 Thai Nepali Association<br>
@@ -887,8 +887,8 @@ function crc16(str) {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
-function generatePromptPayQR(amount) {
-  var phone = '0066637915003'; // +66637915003
+function buildPromptPayPayload(amount) {
+  var phone = '0066637915003';
   var merchant = '0016A000000677010111' + '01' + String(phone.length).padStart(2,'0') + phone;
   var payload = '000201';
   payload += '010212';
@@ -899,17 +899,27 @@ function generatePromptPayQR(amount) {
   payload += '5802TH';
   payload += '6304';
   payload += crc16(payload);
+  return payload;
+}
 
+function generatePromptPayQR(amount) {
   var canvas = document.getElementById('liveQrCanvas');
   if (!canvas) return;
-  if (typeof QRCode === 'undefined') {
-    setTimeout(function(){ generatePromptPayQR(amount); }, 500);
-    return;
-  }
-  QRCode.toCanvas(canvas, payload, {
-    width: 220, margin: 1,
-    color: { dark: '#1C1C2E', light: '#ffffff' }
-  }, function(err){ if(err) console.error('QR error:', err); });
+  var payload = buildPromptPayPayload(amount);
+  var tryRender = function() {
+    if (typeof QRCode !== 'undefined' && typeof QRCode.toCanvas === 'function') {
+      // Clear canvas first
+      var ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      QRCode.toCanvas(canvas, payload, {
+        width: 220, margin: 2,
+        color: { dark: '#000000', light: '#ffffff' }
+      }, function(err){ if(err) console.error('QR error:', err); });
+    } else {
+      setTimeout(tryRender, 300);
+    }
+  };
+  tryRender();
 }
 
 document.getElementById('participantModal').addEventListener('click',function(e){if(e.target===this)closeParticipantModal();});
